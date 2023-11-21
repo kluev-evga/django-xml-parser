@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Upload XML File
+{% endblock %}
+
+
+{% block content %}
+<h1>Upload XML Catalog File</h1>
+<form class="d-flex align-items-center gap-2 mt-4" name="catalog">
+    {% csrf_token %}
+    <div class="form-group">
+        <input type="file" name="file" class="form-control form-control-md"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+    <div class="message"></div>
+</form>
+
+<script>
+    const form = document.forms.catalog;
+    const input = form.file;
+    const message = form.querySelector(".message");
+
+    const showMessage = (msg) => (message.textContent = msg);
+
+    form.addEventListener("submit", function (event) {
+       event.preventDefault();
+       const file = input.files[0];
+       !file ? showMessage("Пожалуйста, выберите файл.") : sendData(file);
+    });
+
+    function sendData(file) {
+       fetch("http://localhost:8000/update_autoru_catalog", {
+          method: "POST",
+          headers: { "Content-Type": "application/xml" },
+          body: file,
+       })
+          .then((response) => {
+             if (!response.ok) {
+                throw new Error("Сетевая ошибка");
+             }
+             showMessage("Файл успешно загружен!");
+             input.value = "";
+          })
+          .catch((error) => {
+             showMessage("Произошла ошибка: " + error.message);
+          });
+    }
+</script>
+{% endblock %}

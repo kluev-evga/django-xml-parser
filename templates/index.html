@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Mark Selection
+{% endblock %}
+
+{% block content %}
+<h1>Select Mark</h1>
+<form class="d-flex align-items-center gap-2" name="model">
+    <label class="mw-30" for="mark">Choose a mark:</label>
+    <select class="form-select p-2 w-25" name="select" id="mark">
+        <option value="-------">-------</option>
+        {% for mark in marks %}
+        <option value="{{ mark.name }}">{{ mark.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+<div id="result" class="mt-4"></div>
+<script>
+    let selected = '-------'
+    const form = document.forms.model
+    const resultDiv = document.getElementById("result")
+    document.body.style.cursor = "default"
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault()
+        const currentSelected = form.select.value
+        if (currentSelected === '-------' || currentSelected === selected) {
+            return
+        }
+        selected = currentSelected
+        fetch(`http://localhost:8000/models?search=${currentSelected}`)
+            .then((response) => {
+                if (!response.ok) throw new Error("Ошибка сети")
+                return response.json()
+            })
+            .then(data => resultDiv.innerHTML = `<ul>${data.map(item => `<li>${item.name}</li>`).join('')}</ul>`)
+            .catch(error => {
+                resultDiv.innerHTML = `<p>Ошибка: ${error.message}</p>`
+            })
+    })
+</script>
+{% endblock %}
